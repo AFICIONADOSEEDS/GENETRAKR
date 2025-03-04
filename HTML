@@ -1,1 +1,682 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GENE TRAKR</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title"><i class="fas fa-dna green-icon"></i> GENE TRAKR</h1>
+      <div class="toolbar">
+        <button id="saveProjectBtn" class="btn btn-primary">
+          <i class="fas fa-save"></i> Save Project
+        </button>
+        <button id="exportDataBtn" class="btn btn-default">
+          <i class="fas fa-file-export"></i> Export
+        </button>
+      </div>
+    </div>
+    
+    <div class="tabs">
+      <div class="tab active" data-tab="grow-room">
+        <i class="fas fa-leaf"></i> Grow Room
+      </div>
+      <div class="tab" data-tab="inventory">
+        <i class="fas fa-seedling"></i> Plant Inventory
+      </div>
+      <div class="tab" data-tab="breeding">
+        <i class="fas fa-dna"></i> Breeding
+      </div>
+      <div class="tab" data-tab="timeline">
+        <i class="fas fa-calendar-alt"></i> Schedule
+      </div>
+      <div class="tab" data-tab="analytics">
+        <i class="fas fa-chart-line"></i> Analytics
+      </div>
+    </div>
+    
+    <div id="grow-room-tab" class="tab-content active">
+      <div class="toolbar" style="margin-bottom: 16px;">
+        <button id="selectTool" class="btn btn-active">
+          <i class="fas fa-mouse-pointer"></i> Select
+        </button>
+        <button id="area4x4Tool" class="btn btn-default">
+          <i class="fas fa-square"></i> Add 4×4 Area
+        </button>
+        <button id="area5x5Tool" class="btn btn-default">
+          <i class="fas fa-square"></i> Add 5×5 Area
+        </button>
+        <button id="customAreaTool" class="btn btn-default">
+          <i class="fas fa-plus-square"></i> Add Custom Area
+        </button>
+        <button id="plantTool" class="btn btn-default">
+          <i class="fas fa-seedling"></i> Add Plant
+        </button>
+        <button id="multiplePlantsTool" class="btn btn-default">
+          <i class="fas fa-seedling"></i><i class="fas fa-plus"></i> Add Multiple Plants
+        </button>
+        <button id="deleteBtn" class="btn btn-danger" disabled>
+          <i class="fas fa-trash"></i> Delete
+        </button>
+        <button id="showNamesBtn" class="btn btn-default">
+          <i class="fas fa-tags"></i> Show Names
+        </button>
+        <button id="showDimensionsBtn" class="btn btn-default">
+          <i class="fas fa-ruler-combined"></i> Show Dimensions
+        </button>
+        <button id="roomSettingsBtn" class="btn btn-default">
+          <i class="fas fa-cog"></i> Room Settings
+        </button>
+      </div>
+      
+      <div class="room-tabs-container">
+        <div id="roomTabs" class="room-tabs">
+          <!-- Room tabs will be added here dynamically -->
+        </div>
+        <div class="room-controls">
+          <button id="viewAllRoomsBtn" class="btn btn-primary btn-sm">
+            <i class="fas fa-th-large"></i> View All
+          </button>
+          <button id="addRoomBtn" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Add Room
+          </button>
+        </div>
+      </div>
+      
+      <div id="viewAllControls" class="view-all-controls" style="display: none;">
+        <div class="room-view-info">Viewing all rooms</div>
+        <button id="fitToScreenBtn" class="btn btn-default btn-sm">
+          <i class="fas fa-compress-arrows-alt"></i> Fit to Screen
+        </button>
+        <button id="exitViewAllBtn" class="btn btn-default btn-sm">
+          <i class="fas fa-times"></i> Exit View
+        </button>
+      </div>
+      
+      <div class="content">
+        <div class="canvas-container">
+          <div id="canvas" class="canvas" style="width: 400px; height: 300px;"></div>
+          <div id="allRoomsContainer" class="all-rooms-container" style="display: none;"></div>
+          <div class="canvas-footer">
+            <div><i class="fas fa-ruler-combined"></i> Room size: <span id="roomSize">20' × 15'</span></div>
+            <div><i class="fas fa-th"></i> Grid: <span id="gridSnap">1'</span></div>
+          </div>
+        </div>
+        
+        <div class="panels-container">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title"><i class="fas fa-info-circle"></i> Details</h3>
+            </div>
+            <div class="panel-body">
+              <div id="detailsContent">
+                <p>Select a growing area or plant to view details</p>
+                <p>Growing Areas: <span id="areaCount">0</span></p>
+                <p>Total Plants: <span id="plantCount">0</span></p>
+              </div>
+              
+              <div id="selectedAreaActions" style="display: none;" class="action-buttons">
+                <button id="autoArrangePlantsBtn" class="btn btn-success">
+                  <i class="fas fa-grip-horizontal"></i> Auto-Arrange Plants
+                </button>
+                <button id="resizeAreaBtn" class="btn btn-default">
+                  <i class="fas fa-expand-arrows-alt"></i> Resize Area
+                </button>
+                <button id="changeAreaColorBtn" class="btn btn-default">
+                  <i class="fas fa-palette"></i> Change Color
+                </button>
+              </div>
+              
+              <div id="selectedPlantActions" style="display: none;" class="action-buttons">
+                <button id="changeColorBtn" class="btn btn-default">
+                  <i class="fas fa-palette"></i> Change Color
+                </button>
+                <button id="editPlantBtn" class="btn btn-primary">
+                  <i class="fas fa-edit"></i> Edit Plant
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title"><i class="fas fa-seedling"></i> Plant Inventory</h3>
+              <button id="addNewPlantBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New
+              </button>
+            </div>
+            <div class="panel-body">
+              <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchPlant" class="search-input" placeholder="Search plants...">
+              </div>
+              
+              <div id="plantList" class="plant-list">
+                <div class="plant-list-header">
+                  <div class="plant-name">Name</div>
+                  <div class="plant-strain">Strain</div>
+                  <div class="plant-stage">Stage</div>
+                </div>
+                <div class="empty-state">
+                  <i class="fas fa-seedling"></i>
+                  <div class="empty-state-text">No plants added yet</div>
+                  <button id="quickAddPlantBtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Plant
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="inventory-tab" class="tab-content">
+      <div class="toolbar" style="margin-bottom: 16px;">
+        <button id="addPlantInventoryBtn" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add New Plant
+        </button>
+        <button id="importPlantsBtn" class="btn btn-default">
+          <i class="fas fa-file-import"></i> Import
+        </button>
+        <button id="exportPlantsBtn" class="btn btn-default">
+          <i class="fas fa-file-export"></i> Export
+        </button>
+        <div style="flex-grow: 1;"></div>
+        <div class="search-box" style="width: 300px; margin-bottom: 0;">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" id="searchInventory" class="search-input" placeholder="Search inventory...">
+        </div>
+      </div>
+      
+      <div class="content">
+        <div class="panel" style="width: 100%;">
+          <div class="panel-header">
+            <h3 class="panel-title"><i class="fas fa-list"></i> Full Plant Inventory</h3>
+            <div>
+              <span id="totalInventoryCount" class="plant-badge">0 Plants</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="empty-state">
+              <i class="fas fa-seedling"></i>
+              <div class="empty-state-text">Your plant inventory is empty</div>
+              <button id="addFirstPlantBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Your First Plant
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="breeding-tab" class="tab-content">
+      <div class="toolbar" style="margin-bottom: 16px;">
+        <button id="createPairBtn" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Create Breeding Pair
+        </button>
+        <button id="viewBreedingHistoryBtn" class="btn btn-default">
+          <i class="fas fa-history"></i> Breeding History
+        </button>
+      </div>
+      
+      <div class="content">
+        <div class="panel" style="width: 100%;">
+          <div class="panel-header">
+            <h3 class="panel-title"><i class="fas fa-dna"></i> Active Breeding Projects</h3>
+          </div>
+          <div class="panel-body">
+            <div class="empty-state">
+              <i class="fas fa-dna"></i>
+              <div class="empty-state-text">No active breeding projects</div>
+              <button id="startBreedingBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Start Breeding Project
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="timeline-tab" class="tab-content">
+      <div class="toolbar" style="margin-bottom: 16px;">
+        <button id="addEventBtn" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Add Event
+        </button>
+        <button id="viewAllEventsBtn" class="btn btn-default">
+          <i class="fas fa-list"></i> View All Events
+        </button>
+        <div style="flex-grow: 1;"></div>
+        <div>
+          <button id="prevMonthBtn" class="btn btn-default">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <span id="currentMonthDisplay" style="margin: 0 10px; font-weight: 500;">March 2025</span>
+          <button id="nextMonthBtn" class="btn btn-default">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="content">
+        <div class="panel" style="width: 100%;">
+          <div class="panel-header">
+            <h3 class="panel-title"><i class="fas fa-calendar-alt"></i> Schedule</h3>
+          </div>
+          <div class="panel-body">
+            <div class="empty-state">
+              <i class="fas fa-calendar-alt"></i>
+              <div class="empty-state-text">No scheduled events</div>
+              <button id="scheduleFirstEventBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add First Event
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="analytics-tab" class="tab-content">
+      <div class="content">
+        <div class="panel" style="width: 100%;">
+          <div class="panel-header">
+            <h3 class="panel-title"><i class="fas fa-chart-line"></i> Analytics</h3>
+          </div>
+          <div class="panel-body">
+            <div class="empty-state">
+              <i class="fas fa-chart-bar"></i>
+              <div class="empty-state-text">Start adding plants to see analytics</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Plant Form Modal -->
+    <div id="plantFormModal" class="modal-backdrop" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Add New Plant</h3>
+          <button class="modal-close" id="closePlantModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="plantName">Plant Name</label>
+            <input type="text" id="plantName" class="form-input" placeholder="E.g., OG Kush #4">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="plantStrain">Strain</label>
+              <input type="text" id="plantStrain" class="form-input" placeholder="E.g., OG Kush">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="plantBreeder">Breeder/Seed Company</label>
+              <input type="text" id="plantBreeder" class="form-input" placeholder="E.g., Seed Company">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="plantCategory">Category</label>
+              <select id="plantCategory" class="form-input">
+                <option value="Indica">Indica</option>
+                <option value="Sativa">Sativa</option>
+                <option value="Hybrid" selected>Hybrid</option>
+                <option value="CBD">CBD</option>
+                <option value="Auto-flowering">Auto-flowering</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="plantSex">Sex</label>
+              <select id="plantSex" class="form-input">
+                <option value="Unknown" selected>Unknown</option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="plantStage">Growth Stage</label>
+              <select id="plantStage" class="form-input">
+                <option value="Seedling" selected>Seedling</option>
+                <option value="Vegetative">Vegetative</option>
+                <option value="Flowering">Flowering</option>
+                <option value="Harvest">Harvest</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="plantQuantity">Quantity</label>
+              <input type="number" id="plantQuantity" class="form-input" min="1" value="1">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">
+              Plant Color 
+              <span id="plantColorPreview" class="color-preview" style="background-color: #3cb371;"></span>
+            </label>
+            <input type="color" id="plantColor" class="form-input" value="#3cb371">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Breeding Tags</label>
+            <div class="breeding-tags-container" id="breedingTagsContainer">
+              <!-- Generated from JS -->
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="plantTags">Tags (separate with comma)</label>
+            <div class="tags-input" id="tagsContainer">
+              <input type="text" id="plantTags" placeholder="Add tags...">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="plantNotes">Notes</label>
+            <textarea id="plantNotes" class="form-input" rows="3" placeholder="Any additional notes about this plant..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelPlantBtn" class="btn btn-default">Cancel</button>
+          <button id="addPlantBtn" class="btn btn-primary">Add Plant</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Multiple Plants Modal -->
+    <div id="multiplePlantsModal" class="modal-backdrop" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Add Multiple Plants</h3>
+          <button class="modal-close" id="closeMultiplePlantsModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="multiplePlantName">Base Plant Name</label>
+            <input type="text" id="multiplePlantName" class="form-input" placeholder="E.g., OG Kush">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="multiplePlantStrain">Strain</label>
+              <input type="text" id="multiplePlantStrain" class="form-input" placeholder="E.g., OG Kush">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="multiplePlantBreeder">Breeder/Seed Company</label>
+              <input type="text" id="multiplePlantBreeder" class="form-input" placeholder="E.g., Seed Company">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="multiplePlantCategory">Category</label>
+              <select id="multiplePlantCategory" class="form-input">
+                <option value="Indica">Indica</option>
+                <option value="Sativa">Sativa</option>
+                <option value="Hybrid" selected>Hybrid</option>
+                <option value="CBD">CBD</option>
+                <option value="Auto-flowering">Auto-flowering</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="multiplePlantSex">Sex</label>
+              <select id="multiplePlantSex" class="form-input">
+                <option value="Unknown" selected>Unknown</option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="multiplePlantStage">Growth Stage</label>
+              <select id="multiplePlantStage" class="form-input">
+                <option value="Seedling" selected>Seedling</option>
+                <option value="Vegetative">Vegetative</option>
+                <option value="Flowering">Flowering</option>
+                <option value="Harvest">Harvest</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="multiplePlantQuantity">Quantity</label>
+              <input type="number" id="multiplePlantQuantity" class="form-input" min="1" value="5">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">
+              Plant Color 
+              <span id="multiplePlantColorPreview" class="color-preview" style="background-color: #3cb371;"></span>
+            </label>
+            <input type="color" id="multiplePlantColor" class="form-input" value="#3cb371">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelMultiplePlantsBtn" class="btn btn-default">Cancel</button>
+          <button id="addMultiplePlantsBtn" class="btn btn-primary">Add Plants</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Color Change Modal -->
+    <div id="colorChangeModal" class="modal-backdrop" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Change Plant Color</h3>
+          <button class="modal-close" id="closeColorModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">
+              New Color 
+              <span id="newColorPreview" class="color-preview" style="background-color: #3cb371;"></span>
+            </label>
+            <input type="color" id="newPlantColor" class="form-input" value="#3cb371">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelColorChangeBtn" class="btn btn-default">Cancel</button>
+          <button id="applyColorChangeBtn" class="btn btn-primary">Apply</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Area Color Change Modal -->
+    <div id="areaColorChangeModal" class="modal-backdrop" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Change Area Color</h3>
+          <button class="modal-close" id="closeAreaColorModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">
+              New Color 
+              <span id="newAreaColorPreview" class="color-preview" style="background-color: rgba(220, 252, 231, 0.7);"></span>
+            </label>
+            <input type="color" id="newAreaColor" class="form-input" value="#dcfce7">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="areaColorOpacity">Opacity</label>
+            <input type="range" id="areaColorOpacity" class="form-input" min="0.1" max="1.0" step="0.1" value="0.7">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelAreaColorChangeBtn" class="btn btn-default">Cancel</button>
+          <button id="applyAreaColorChangeBtn" class="btn btn-primary">Apply</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Room Settings Modal -->
+    <div id="roomSettingsModal" class="modal-backdrop" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Room Settings</h3>
+          <button class="modal-close" id="closeRoomSettingsBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="roomWidth">Width (feet)</label>
+              <input type="number" id="roomWidth" class="form-input" min="5" max="50" value="20">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="roomHeight">Length (feet)</label>
+              <input type="number" id="roomHeight" class="form-input" min="5" max="50" value="15">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="gridSnapSize">Grid Snap Size</label>
+            <select id="gridSnapSize" class="form-input">
+              <option value="0.5">6 inches (0.5')</option>
+              <option value="1" selected>1 foot</option>
+              <option value="2">2 feet</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelRoomSettingsBtn" class="btn btn-default">Cancel</button>
+          <button id="applyRoomSettingsBtn" class="btn btn-primary">Apply</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Custom Area Modal -->
+    <div id="customAreaModal" class="modal-backdrop" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Custom Growing Area</h3>
+          <button class="modal-close" id="closeCustomAreaBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="customAreaWidth">Width (feet)</label>
+              <input type="number" id="customAreaWidth" class="form-input" min="1" max="20" value="4">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="customAreaHeight">Length (feet)</label>
+              <input type="number" id="customAreaHeight" class="form-input" min="1" max="20" value="4">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              Area Color 
+              <span id="customAreaColorPreview" class="color-preview" style="background-color: rgba(220, 252, 231, 0.7);"></span>
+            </label>
+            <input type="color" id="customAreaColor" class="form-input" value="#dcfce7">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customAreaColorOpacity">Opacity</label>
+            <input type="range" id="customAreaColorOpacity" class="form-input" min="0.1" max="1.0" step="0.1" value="0.7">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelCustomAreaBtn" class="btn btn-default">Cancel</button>
+          <button id="createCustomAreaBtn" class="btn btn-primary">Create</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Resize Area Modal -->
+    <div id="resizeAreaModal" class="modal-backdrop" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Resize Growing Area</h3>
+          <button class="modal-close" id="closeResizeAreaBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="resizeAreaWidth">Width (feet)</label>
+              <input type="number" id="resizeAreaWidth" class="form-input" min="1" max="20" value="4">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="resizeAreaHeight">Length (feet)</label>
+              <input type="number" id="resizeAreaHeight" class="form-input" min="1" max="20" value="4">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelResizeAreaBtn" class="btn btn-default">Cancel</button>
+          <button id="applyResizeAreaBtn" class="btn btn-primary">Apply</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Add Room Modal -->
+    <div id="addRoomModal" class="modal-backdrop" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Add New Room</h3>
+          <button class="modal-close" id="closeAddRoomModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="roomName">Room Name</label>
+            <input type="text" id="roomName" class="form-input" placeholder="Custom name or leave blank for preset name">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="roomType">Room Type</label>
+            <select id="roomType" class="form-input">
+              <option value="Clone Space">Clone Space</option>
+              <option value="Mom Space">Mom Space</option>
+              <option value="Vegetative Space" selected>Vegetative Space</option>
+              <option value="Flowering Space">Flowering Space</option>
+              <option value="Male/Pollen Collection">Male/Pollen Collection Space</option>
+              <option value="Back Up Veg Area">Back Up Veg Area</option>
+              <option value="Custom">Custom</option>
+            </select>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="newRoomWidth">Width (feet)</label>
+              <input type="number" id="newRoomWidth" class="form-input" min="5" max="50" value="20">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="newRoomHeight">Length (feet)</label>
+              <input type="number" id="newRoomHeight" class="form-input" min="5" max="50" value="15">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">
+              Room Color 
+              <span id="roomColorPreview" class="color-preview" style="background-color: rgba(220, 252, 231, 0.7);"></span>
+            </label>
+            <input type="color" id="roomColor" class="form-input" value="#dcfce7">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelAddRoomBtn" class="btn btn-default">Cancel</button>
+          <button id="createRoomBtn" class="btn btn-primary">Create Room</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
